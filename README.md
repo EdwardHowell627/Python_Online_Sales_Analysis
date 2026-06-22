@@ -24,7 +24,7 @@ From this dataset, I wanted to know a few things:
 
 ## Dataset
 
-![Dataset variables](assets\Dataset.png)
+![Dataset variables](assets/Dataset.png)
 *Dataset sourced from the [UC Irvine Machine Learning Repository](https://archive.ics.uci.edu/dataset/352/online+retail)
 
 The dataset, as shown above is a single table with 8 columns. Each row documents a single order from a customers with the ID of the product orders, the amount ordered, the date it was ordered, the ID of the customer making the order, the unit price of item, and the country it was ordered from.
