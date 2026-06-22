@@ -101,28 +101,28 @@ I start by using `.groupby()` to group by the StockCode and create the first 3 c
 
 
 ### Product Price Band
-![Product Price Band](assets\2_PriceBandAnalysis.png)
+![Product Price Band](assets/2_PriceBandAnalysis.png)
 
 
 
 ### Cancellation Rate
-![Cancellation Rate](assets\3_CancellationRates.png)
+![Cancellation Rate](assets/3_CancellationRates.png)
 
 
 # Customer Analysis
 
 ### Customer Revenue Band
-![Customer Revenue Band](assets\4_CustomerRevenueByBand.png)
+![Customer Revenue Band](assets/4_CustomerRevenueByBand.png)
 
 
 
 ### Monthly Revenue
-![Monthly Revenue](assets\5_MonthlyRevenue.png)
+![Monthly Revenue](assets/5_MonthlyRevenue.png)
 
 
 
 ### Country Revenue
-![Country Revenue](assets\6_UKvsOther.png)
+![Country Revenue](assets/6_UKvsOther.png)
 
 
 
