@@ -97,7 +97,42 @@ I start by using `.groupby()` to group by the StockCode and create the first 3 c
 ### Top Products
 ![Top Products](assets/1_TopProducts.png)
 
+```python
+### Setup
+# Calculation
+top_quantity = products_group.nlargest(10, 'Quantity')
+top_totalprice = products_group.nlargest(10, 'TotalRevenue')
 
+# Figure creation
+fig, ax = plt.subplots(1, 2)
+fig.set_size_inches((14, 6))
+
+colors = ['salmon', 'skyblue', 'lightgreen', 'khaki', 'plum']
+```
+Now that we have a grouped dataset with many  of the key insights for products, creating a bar plot with the top products by a column is relatively simple. Using the `.nlargest()` function I can filter the dataset for the 10 top products by the passed column, in this case Quantity and TotalRevenue. After getting the top products I use `plt.subplots()`
+
+```python
+## Quantity bar
+bars1 = ax[0].barh(top_quantity['Description'], top_quantity['Quantity'], color=colors[0], edgecolor='dimgrey')
+
+ax[0].invert_yaxis()
+ax[0].grid(axis='x', linestyle='--', alpha=0.4)
+ax[0].set_axisbelow(True)
+
+ax[0].xaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x/1000:.0f}K'))
+ax[0].bar_label(bars1, labels=[f'{x/1000:.1f}K' for x in top_quantity['Quantity']], padding=-40, fontsize='12')
+
+ax[0].set_title('Top 10 Products by Quantity', fontsize=14, weight='bold', pad=12)
+ax[0].set_xlabel('Quantity')
+ax[0].set_ylabel('Product')
+```
+
+
+```python
+## Finish
+fig.tight_layout()
+plt.savefig('../assets/1_TopProducts.png', dpi=200)
+```
 
 
 ### Product Price Band
