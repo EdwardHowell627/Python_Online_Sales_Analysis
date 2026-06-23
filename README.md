@@ -127,7 +127,7 @@ fig, ax = plt.subplots(1, 2, figsize=(14,6))
 
 colors = ['salmon', 'skyblue', 'lightgreen', 'khaki', 'plum']
 ```
-Now that we have a grouped dataset with many  of the key insights for products, creating a bar plot with the top products by a column is relatively simple. Using the `.nlargest()` function I can filter the dataset for the 10 top products by the passed column, in this case Quantity and TotalRevenue. After getting the top products I use `.subplots()` to allow me to put the 2 planned bar charts next to eachother in the same single image.  
+For the first part of the product analysis I want to create bar charts to visualize the top 10 products by quantity sold and revenue generated. Since I have a grouped dataset, creating the bar plot is relatively simple. Using the `.nlargest()` function I can filter the dataset for the 10 top products by the passed column, in this case Quantity and TotalRevenue. After getting the top products I use `.subplots()` to allow me to put the 2 planned bar charts next to eachother in the same single image.  
 
 ```python
 ## Quantity bar
@@ -170,7 +170,7 @@ fig, ax = plt.subplots(1, 2, figsize=(14,6))
 
 colors = ['salmon', 'skyblue', 'lightgreen', 'khaki', 'plum']
 ```
-Utilizing price band column we created earlier, I can group by the bands to get the total revenue of all products in the price bands in the count of how many uniqueproducts are in each of the bands.
+For the second part of the price band analysis I want to create a pie chart and bar chart to visualize the breakdown of unique products and total revenue by the price bands. Utilizing price band column created earlier, I can group by the bands to get the total revenue of all products in the price bands in the count of how many unique products are in each of the bands.
 
 ```python
 ## Band distribution pie chart
@@ -215,20 +215,21 @@ The process for creating and finishing the second bar plot is similar to the alr
 
 ### Cancellation Rate
 ![Cancellation Rate](assets/3_CancellationRates.png)
+
 ```python
 ## Setup
 # Calculation
-cancelled_group = (df_full.groupby(['StockCode', 'Cancelled'], observed=True)['Quantity'].count().unstack(fill_value=0))
+cancelled_group = (df_full.groupby(['StockCode', 'Cancelled'], observed=True)['StockCode'].count().unstack(fill_value=0))
 cancelled_group = cancelled_group.rename(columns={False: 'NotCancelled', True: 'Cancelled'})
-cancelled_group['PercentCancelled'] = (cancelled_group['Cancelled'] / (cancelled_group['NotCancelled'] + cancelled_group['Cancelled']))
 cancelled_group = cancelled_group[cancelled_group.Cancelled > 0]
 cancelled_group = cancelled_group[(cancelled_group.Cancelled + cancelled_group.NotCancelled) > 10]
+cancelled_group['PercentCancelled'] = (cancelled_group['Cancelled'] / (cancelled_group['NotCancelled'] + cancelled_group['Cancelled']))
+
 
 # Figure creation
 fig, ax = plt.subplots(figsize=(7,6))
 ```
-
-
+For the last part of the product analysis I want to chart the cancellation rate of a product versus the totals sales made to see if there is a correlation between the two values. To start I will need the cancellation rates. I calculate this by grouping the full dataframe (the one previously worked with had cancelled orders exlcuded) by StockCode and Cancelled, counting the number of orders cancelled and not cancelled. I then unstack it with `.unstack()` so now I have a dataframe with rows for each product and 2 columns for the cancelled counts and not cancelled counts. After some filtering to only get items with sufficient cancelled data I calculate the percent cancelled and save it to a new column.
 
 ```python
 ## Cancellation percentage scatterplot
@@ -249,6 +250,7 @@ ax.set_title('Cancellation Rates of Products by Orders Made', fontsize=14, weigh
 ax.set_ylabel('Canellation Rate')
 ax.set_xlabel('Orders Made (Logarithmic)')
 ```
+Now that I have the two values needed of orders made and cancellation percentage, I can create the scatterplot with `.scatter()`. Since there is a large variety in the number of orders for each product I set the x scale to logarithmic with `.set_xscale()`.
 
 ```python
 ## Line of best fit
@@ -260,6 +262,7 @@ y_line = m * x_line_log + b
 plt.plot(10**x_line_log,y_line, color='orangered', linewidth=2, label='Logarithmic fit')
 plt.legend()
 ```
+Using the log of the x values I create a line of best fit for the chart with `.polyfit()` and plot the line with `.plot()`.
 
 ```python
 ## Finish
@@ -269,7 +272,10 @@ plt.text(0.02, 0.98, f"r = {r:.2f}\np = {p:.3g}", transform=plt.gca().transAxes,
 plt.tight_layout()
 plt.savefig('../assets/3_CancellationRates.png', dpi=200)
 ```
+To finish the plot I wanted to some statistical analysis to see if there is a statistically significant relationship. I use `pearsonr()` to get the r and p values and put them onto the chart with `.text()`.
+
 ### Product Analysis Takeaways
+
 
 
 # Customer Analysis
