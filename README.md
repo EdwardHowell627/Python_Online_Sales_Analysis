@@ -48,9 +48,26 @@ When starting the cleaning process of the data I had a few goals in mind:
 3. Third, I needed to ensure that the Date column was correctly recognized by Python as a date time datatype. 
 
 ```python
+## Imports
+import numpy as np
+import pandas as pd
+
+import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
+from matplotlib.patches import Patch
+
+from scipy.stats import pearsonr
+
+## Plotting Constants
+COLORS = ['salmon', 'skyblue', 'lightgreen', 'khaki', 'plum']
+EDGECOLOR = 'dimgrey'
+
 ## Data loading
 df = pd.read_csv('../dataset/online_retail.csv')
+```
+Before cleaning the data I first needed to do my imports, constant initialization, and data loading.
 
+```python
 ## Data cleaning
 df['InvoiceDate'] = pd.to_datetime(df['InvoiceDate'])
 df['CustomerID'] = df['CustomerID'].astype('Int64')
@@ -85,7 +102,7 @@ Top 4 rows after cleaning:
 |    536366 |     22633 |            HAND WARMER UNION JACK |        6 | 2010-12-01 08:28:00 |      1.85 |      17850 | United Kingdom |     False |      11.10 |
 |
 
-# Product Analysis 
+# Product Analysis Code
 
 Before starting analysis on the products, I needed to create a grouped dataset for the products sold. This grouped dataframe is used in most of the product analysis and has the following details:
 - The total number of a product sold
@@ -104,13 +121,16 @@ product_details = df_full.drop_duplicates('StockCode')[['StockCode','Description
 products_group = products_group.merge(product_details, on='StockCode')
 
 ## Product price band creation
+bands = ['£0-1', '£1-3', '£3-5', '£5-10', '£10+']
+color_map = dict(zip(bands, COLORS))
+
 products_group['PriceBand'] = pd.cut(
     products_group['UnitPrice'], 
     bins=[0,1,3,5,10,float('inf')], 
-    labels=['£0-1', '£1-3', '£3-5', '£5-10', '£10+']
+    labels=bands
 )
 ```
-I start by using `.groupby()` to group by the StockCode and create the first 3 columns of Quantity, TotalRevenue, and UnitPrice. I then use `.cut()` to create a price band column which classifies the products based on what price range they fall into of (£0-1], (£1-3], (£3-5], (£5-10], and (£10+).
+I start by using `.groupby()` to group by the StockCode and create the first 3 columns of Quantity, TotalRevenue, and UnitPrice. I then use `.cut()` to create a price band column which classifies the products based on what price range they fall into of (£0-1], (£1-3], (£3-5], (£5-10], and (£10+). I also create a color map for the color bands which will be used later to ensure consistent coloring for bands.
 
 
 ### Top Products
@@ -125,13 +145,12 @@ top_totalprice = products_group.nlargest(10, 'TotalRevenue')
 # Figure creation
 fig, ax = plt.subplots(1, 2, figsize=(14,6))
 
-colors = ['salmon', 'skyblue', 'lightgreen', 'khaki', 'plum']
 ```
-For the first part of the product analysis I want to create bar charts to visualize the top 10 products by quantity sold and revenue generated. Since I have a grouped dataset, creating the bar plot is relatively simple. Using the `.nlargest()` function I can filter the dataset for the 10 top products by the passed column, in this case Quantity and TotalRevenue. After getting the top products I use `.subplots()` to allow me to put the 2 planned bar charts next to eachother in the same single image.  
+For the first part of the product analysis I want to create bar charts to visualize the top 10 products by quantity sold and revenue generated. Since I have a grouped dataset, creating the bar plot is relatively simple. Using the `.nlargest()` function I can filter the dataset for the 10 top products by the passed column, in this case Quantity and TotalRevenue. After getting the top products I use `.subplots()` to allow me to put the 2 planned bar charts next to eachother in the same single image.
 
 ```python
 ## Quantity bar
-bars1 = ax[0].barh(top_quantity['Description'], top_quantity['Quantity'], color=colors[0], edgecolor='dimgrey')
+bars1 = ax[0].barh(top_quantity['Description'], top_quantity['Quantity'], color=top_quantity['PriceBand'].map(color_map), edgecolor=EDGECOLOR)
 
 ax[0].invert_yaxis()
 ax[0].grid(axis='x', linestyle='--', alpha=0.4)
@@ -144,14 +163,21 @@ ax[0].set_title('Top 10 Products by Quantity', fontsize=14, weight='bold', pad=1
 ax[0].set_xlabel('Quantity')
 ax[0].set_ylabel('Product')
 ```
-Using the top products filtered dataset, I create a horizonal bar with `.barh()` and hen implement a variety of visual customizations to make the charts easier to understand. I start by inverting the y axis with `.invert_yaxis()` to make the order of the bars more intuitive. Next, I turn on the grid lines with `.grid()`, but only for the axis that is needed and set them to be drawn below the bars with `.set_axisbelow()`. Then I use f string formatting with `.set_major_formatter()` and `.bar_label()` to add bar labels and customize the bar labels and axis ticks to use K to represent 1000, this makes understanding the numbers at a glance much easier. I then finish by adding titles and axis labels with `.set_title()`, `.set_xlabel()`, and `.set_ylabel()`. Since the process for creating the second bar plot is very similiar I won't showcase it here, the only notable differeneces are the labels.
+
+Using the top products filtered dataset, I create a horizonal bar with `.barh()` using the color map to set the bar colors. Following the bar creation there are still many customizations needed to make the chart intuitive and insightful. I start by inverting the y axis with `.invert_yaxis()` to make the order of the bars more intuitive. Next, I turn on the grid lines with `.grid()`, but only for the axis that is needed and set them to be drawn below the bars with `.set_axisbelow()`. Then I use f string formatting with `.set_major_formatter()` and `.bar_label()` to add bar labels and customize the bar labels and axis ticks to use K to represent 1000, this makes understanding the numbers at a glance much easier. I then finish by adding titles and axis labels with `.set_title()`, `.set_xlabel()`, and `.set_ylabel()`. Since the process for creating the second bar plot is very similiar I won't showcase it here, the only notable differeneces are the labels.
+
+```python
+legend_handles = [Patch(facecolor=color, edgecolor='dimgrey', label=band) for band, color in color_map.items()]
+ax[1].legend(handles=legend_handles, title='Price Band', bbox_to_anchor=(1.02, 0.5), loc='center left')
+```
+To create the legend I use `Patch()` with the color map to create the legend handles.
 
 ```python
 ## Finish
 fig.tight_layout()
 plt.savefig('../assets/1_TopProducts.png', dpi=200)
 ```
-Once I have both bar charts created I can finish by calling `.tight_layout()` to clean the visual placements and saving the figure with `.savefig()` to file so it can be displayed in the README.
+Once I have both bar charts and the legend created I can finish by calling `.tight_layout()` to clean the visual placements and saving the figure with `.savefig()` to file so it can be displayed in the README.
 
 
 ### Product Price Band
@@ -181,8 +207,8 @@ ax[0].pie(
     counterclock=False,
     autopct='%1.1f%%',
     pctdistance=0.75,
-    colors=colors,
-    wedgeprops={'edgecolor': 'dimgrey', 'width': 0.5},
+    colors=COLORS,
+    wedgeprops={'edgecolor':EDGECOLOR, 'width':0.5},
     textprops={'size':'large'}
 )
 ax[0].set_title('Distribution of Products Across Price Bands', weight='bold', fontsize=14,pad=10)
@@ -192,7 +218,7 @@ With the new price band data I create a pie chart with `.pie()` to visualize the
 
 ```python
 ## Revenue distribution bar chart
-bars1 = ax[1].bar(height=price_grouped['TotalRevenue'], x=price_grouped.index, color=colors, edgecolor='dimgrey')
+bars1 = ax[1].bar(height=price_grouped['TotalRevenue'], x=price_grouped.index, color=COLORS, edgecolor=EDGECOLOR)
 
 ax[1].grid(axis='y', linestyle='--', alpha=0.4)
 ax[1].set_axisbelow(True)
@@ -205,12 +231,15 @@ ax[1].set_ylabel('Total Revenue')
 ax[1].set_xlabel('Price Band')
 ax[1].set_title('Revenue Contribution by Price Band', weight='bold', fontsize=14,pad=10)
 
+legend_handles = [Patch(facecolor=color, edgecolor='dimgrey', label=band) for band, color in color_map.items()]
+ax[1].legend(handles=legend_handles, title='Price Band', bbox_to_anchor=(1.02, 0.5), loc='center left')
+
 
 ## Finish
 fig.tight_layout()
 plt.savefig('../assets/2_PriceBandAnalysis.png', dpi=200)
 ```
-The process for creating and finishing the second bar plot is similar to the already showcased bar plots. I add an additonal bar label for the percentage breakdown of revenue to help comparison of the two plots. 
+The process for creating and finishing the second bar plot is similar to the already showcased bar plots. The most notable difference is the additonal bar label for the percentage breakdown of revenue to help the viewer make comparisons between the two plots. 
 
 
 ### Cancellation Rate
@@ -274,11 +303,11 @@ plt.savefig('../assets/3_CancellationRates.png', dpi=200)
 ```
 To finish the plot I wanted to some statistical analysis to see if there is a statistically significant relationship. I use `pearsonr()` to get the r and p values and put them onto the chart with `.text()`.
 
-### Product Analysis Takeaways
+## Product Analysis Takeaways
 
 
 
-# Customer Analysis
+# Customer Analysis Code
 
 ### Customer Revenue Band
 ![Customer Revenue Band](assets/4_CustomerRevenueByBand.png)
@@ -293,6 +322,6 @@ To finish the plot I wanted to some statistical analysis to see if there is a st
 ### Country Revenue
 ![Country Revenue](assets/6_UKvsOther.png)
 
-### Customer Analysis Takeaways
+## Customer Analysis Takeaways
 
 # Conclusion
