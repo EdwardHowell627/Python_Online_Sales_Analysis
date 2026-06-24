@@ -243,7 +243,9 @@ The process for creating and finishing the second bar plot is similar to the alr
 
 
 ### Cancellation Rate
-![Cancellation Rate](assets/3_CancellationRates.png)
+<p align="center">
+  <img src="assets/3_CancellationRates.png" width="500">
+</p>
 
 ```python
 ## Setup
