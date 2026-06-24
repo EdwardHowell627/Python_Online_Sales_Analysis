@@ -5,7 +5,7 @@ This is the third of four projects meant to showcase my knowledge of GitHub and 
 From this dataset, I wanted to know a few things:
 - Which products are most successful?
 - How do prices impact the success of a product?
-- Does the Success of a product correlate with how often orders are cancelled?
+- Does the success of a product correlate with how often orders are cancelled?
 - How much of overall revenue is contributed by low spending and high spending customers?
 - What months of the year have the most revenue?
 - How important is the customer base outside of the UK to revenue?
@@ -78,7 +78,7 @@ df['InvoiceNo'] = df['InvoiceNo'].mask(df['Cancelled'],df['InvoiceNo'].str[1:])
 df = df[(df.StockCode.str.len() <= 6) & (df.StockCode.str.isnumeric())]
 ```
 
-After importing the necessary libraries and functions, I started by reading in the dataset from the csv with `.read_csv()`. Once the dataframe is created I use `.to_datetime()` to ensure the InvoiceDate is recognized as a date. Next I add a new column called Cancelled which is a boolean column for whether the row was documneting a cancelled transaction. I then use that column with `.mask()` to remove the 'C' from the ID of cancelled transactions. Following that, I drop all the transactions for products not following the StockCode 6 number format since a small selection of items had longer stock codes from color variants or were not customer purchases.
+After importing the necessary libraries and functions, I started by reading in the dataset from the csv with `.read_csv()`. Once the dataframe is created I use `.to_datetime()` to ensure the InvoiceDate is recognized as a date. Next I add a new column called Cancelled which is a boolean column for whether the row was documneting a cancelled transaction. I then use that column with `.mask()` to remove the 'C' from the ID of cancelled transactions. Following that, I drop all the transactions for products not following the StockCode 6 number format since a small selection of products had longer stock codes from color variants or were not customer purchases.
 
 ```python
 df['TotalPrice'] = df['Quantity'] * df['UnitPrice']
@@ -130,7 +130,7 @@ products_group['PriceBand'] = pd.cut(
     labels=bands
 )
 ```
-I start by using `.groupby()` to group by the StockCode and create the first 3 columns of Quantity, TotalRevenue, and UnitPrice. I then use `.cut()` to create a price band column which classifies the products based on what price range they fall into of (£0-1], (£1-3], (£3-5], (£5-10], and (£10+). I also create a color map for the color bands which will be used later to ensure consistent coloring for bands.
+I start by using `.groupby()` to group by the StockCode and create the first 3 columns of Quantity, TotalRevenue, and UnitPrice. I then use `.cut()` to create a price band column which classifies the products based on what price range they fall into of (£0-1], (£1-3], (£3-5], (£5-10], and (£10+). I also create a color map for the color bands which will be used later to ensure consistent coloring for bands. In some places the color map isn't necessary because of the natural ordering of the bands.
 
 
 ### Top Products
@@ -170,7 +170,7 @@ Using the top products filtered dataset, I create a horizonal bar with `.barh()`
 legend_handles = [Patch(facecolor=color, edgecolor='dimgrey', label=band) for band, color in color_map.items()]
 ax[1].legend(handles=legend_handles, title='Price Band', bbox_to_anchor=(1.02, 0.5), loc='center left')
 ```
-To create the legend I use `Patch()` with the color map to create the legend handles.
+To create the legend I used `Patch()` with the color map to create the legend handles. This was necessary because neither of the bar plots have all the bands in their data.
 
 ```python
 ## Finish
@@ -231,8 +231,8 @@ ax[1].set_ylabel('Total Revenue')
 ax[1].set_xlabel('Price Band')
 ax[1].set_title('Revenue Contribution by Price Band', weight='bold', fontsize=14,pad=10)
 
-legend_handles = [Patch(facecolor=color, edgecolor='dimgrey', label=band) for band, color in color_map.items()]
-ax[1].legend(handles=legend_handles, title='Price Band', bbox_to_anchor=(1.02, 0.5), loc='center left')
+ax[1].legend(bars1, bands, title='Price Band', bbox_to_anchor=(1.02, 0.5), loc='center left')
+
 
 
 ## Finish
@@ -250,15 +250,14 @@ The process for creating and finishing the second bar plot is similar to the alr
 # Calculation
 cancelled_group = (df_full.groupby(['StockCode', 'Cancelled'], observed=True)['StockCode'].count().unstack(fill_value=0))
 cancelled_group = cancelled_group.rename(columns={False: 'NotCancelled', True: 'Cancelled'})
-cancelled_group = cancelled_group[cancelled_group.Cancelled > 0]
-cancelled_group = cancelled_group[(cancelled_group.Cancelled + cancelled_group.NotCancelled) > 10]
+cancelled_group = cancelled_group[(cancelled_group.Cancelled + cancelled_group.NotCancelled) > 20]
 cancelled_group['PercentCancelled'] = (cancelled_group['Cancelled'] / (cancelled_group['NotCancelled'] + cancelled_group['Cancelled']))
 
 
 # Figure creation
 fig, ax = plt.subplots(figsize=(7,6))
 ```
-For the last part of the product analysis I want to chart the cancellation rate of a product versus the totals sales made to see if there is a correlation between the two values. To start I will need the cancellation rates. I calculate this by grouping the full dataframe (the one previously worked with had cancelled orders exlcuded) by StockCode and Cancelled, counting the number of orders cancelled and not cancelled. I then unstack it with `.unstack()` so now I have a dataframe with rows for each product and 2 columns for the cancelled counts and not cancelled counts. After some filtering to only get items with sufficient cancelled data I calculate the percent cancelled and save it to a new column.
+For the last part of the product analysis I want to chart the cancellation rate of a product versus the totals sales made to see if there is a correlation between the two values. To start I will need the cancellation rates. I calculate this by grouping the full dataframe (the one previously worked with had cancelled orders exlcuded) by StockCode and Cancelled, counting the number of orders cancelled and not cancelled. I then unstack it with `.unstack()` so now I have a dataframe with rows for each product and 2 columns for the cancelled counts and not cancelled counts. After some filtering to only get products with sufficient cancelled data I calculate the percent cancelled and save it to a new column.
 
 ```python
 ## Cancellation percentage scatterplot
@@ -268,7 +267,7 @@ y = cancelled_group['PercentCancelled']
 ax.scatter(x=x, y=y, alpha=0.5, s=8)
 
 ax.set_xscale('log')
-ax.set_ylim((0,0.25))
+ax.set_ylim((0.005,0.25))
 
 ax.grid(axis="both", linestyle='--', alpha=0.4)
 ax.set_axisbelow(True)
@@ -303,9 +302,33 @@ plt.savefig('../assets/3_CancellationRates.png', dpi=200)
 ```
 To finish the plot I wanted to some statistical analysis to see if there is a statistically significant relationship. I use `pearsonr()` to get the r and p values and put them onto the chart with `.text()`.
 
-## Product Analysis Takeaways
+# Product Analysis Takeaways
 
+### Top Products & Price Band
+From the two bar charts of the top 10 products by quantity sold and total revenue we can notice a couple patterns. One pattern is that the top products by quantity sold are all from the two lowest price bands, clearly showing that lower priced products sell better. Another pattern is that accross the two charts, the £1-3 band is the top performer with it having both the top 3 products by quantity sold and half of both the top 10 by quantity and revenue. Interestingly there isn't a single product from the lowest price band in the top 10 by revenue, showing that although they sell well, that doesn't make up for low revenue generated per sale.
 
+Looking at the second chart we can get some more insights regarding the overall performances of the different price bands. Products in the £1-3 band by far are the most popular with 44.5% of all unique products offered having a price in that band. The most interesting insights however come from comparing the distribution of prodcuts by band to the distribution of revenue by band. Products in the £1-3 and £3-5 price bands have a roughly equal representation in the product distribution and revenue distribution. Products in the £0-1 price band make up 17.7% of unique products falling into that band but with those products up less than half of that percentage of overall revenue. Conversly the revenue of products in the £5-10 and £10+ outperforms their percentage of the unique products within their band. 
+
+From these two charts it is clear that low price products within the £0-1 band are much less profitable compared to products of higher prices. Products within that band make many sales but bring in very little revenue compared to the percentage of unique products within the band. Conversly, products in the £1-3 band make up the core of the business with the majority of revenue and unique products within the band. Lastly, products of the higher price bands out perform the lower bands with regard to revenue generated per unique product listed. I would recommened a shift in focus away from lower priced products between £0-1 and toward the more revenue generating higher priced products.
+
+### Cancellation Rates
+
+Based on the graph of cancellation rates and the p-value being greater than 0.05, there is no statistically significant relationship between cancellation rates and the total number of orders made for a product. This tells us that products which have been ordered more do not have statistically different cancellation rates. 
+
+### Questions and Answers
+To answer the questions posed at the start:
+
+- Which products are most successful?
+
+    - The most successful products are those within the £1-3 price band with those products making up the largest portion of unique offered products and revenue.
+
+- How do prices impact the success of a product?
+
+    - The products in the lowest price band  of £0-1 make up a small portion of the overall revenue. On the other hand, products in the highest price bands of £5-10 and £10+ make more revenue relative to the unique number of products in the price bands. 
+
+- Does the success of a product correlate with how often orders are cancelled?
+
+    - No, the success of a product does not correlate with how often orders are cancelled.
 
 # Customer Analysis Code
 
