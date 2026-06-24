@@ -23,8 +23,10 @@ From this dataset, I wanted to know a few things:
 
 
 # Dataset
+<p align="center">
+  <img src="assets/Dataset.png" width="800">
+</p>
 
-![Dataset variables](assets/Dataset.png)
 *Dataset sourced from the [UC Irvine Machine Learning Repository](https://archive.ics.uci.edu/dataset/352/online+retail)
 
 Top 4 rows before cleaning:
@@ -134,7 +136,9 @@ I start by using `.groupby()` to group by the StockCode and create the first 3 c
 
 
 ### Top Products
-![Top Products](assets/1_TopProducts.png)
+<p align="center">
+  <img src="assets/1_TopProducts.png" width="800">
+</p>
 
 ```python
 ### Setup
@@ -181,7 +185,9 @@ Once I have both bar charts and the legend created I can finish by calling `.tig
 
 
 ### Product Price Band
-![Product Price Band](assets/2_PriceBandAnalysis.png)
+<p align="center">
+  <img src="assets/2_PriceBandAnalysis.png" width="800">
+</p>
 
 ```python
 ## Setup
@@ -335,18 +341,21 @@ To answer the questions posed at the start:
 # Customer Analysis Code
 
 ### Customer Revenue Band
-![Customer Revenue Band](assets/4_CustomerRevenueByBand.png)
-
+<p align="center">
+  <img src="assets/4_CustomerRevenueByBand.png" width="500">
+</p>
 
 
 ### Monthly Revenue
-![Monthly Revenue](assets/5_MonthlyRevenue.png)
-
+<p align="center">
+  <img src="assets/5_MonthlyRevenue.png" width="800">
+</p>
 
 
 ### Country Revenue
-![Country Revenue](assets/6_UKvsOther.png)
-
+<p align="center">
+  <img src="assets/6_UKvsOther.png" width="800">
+</p>
 ## Customer Analysis Takeaways
 
 # Conclusion
