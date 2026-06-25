@@ -38,15 +38,15 @@ Top 4 rows before cleaning:
 |    536365 |    84406B |      CREAM CUPID HEARTS COAT HANGER |        8 | 12/1/2010 8:26 |      2.75 |    17850.0 | United Kingdom |
 |    536365 |    84029G | KNITTED UNION FLAG HOT WATER BOTTLE |        6 | 12/1/2010 8:26 |      3.39 |    17850.0 | United Kingdom |
 
-The dataset, as shown above is a single table with 8 columns. Each row documents a single order from a customers with the ID of the product orders, the amount ordered, the date it was ordered, the ID of the customer making the order, the unit price of item, and the country it was ordered from.
+The dataset, as shown above is a single table with 8 columns. Each row documents a single order from a customer including the ID of the product ordered, the amount ordered, the date the product was ordered, the ID of the customer making the order, the unit price of item, and the country the customer ordered from.
 
-One thing of note regarding how the transactions are documented, is that not all rows are completed transactions. Some rows are cancelled orders, represented by a 'C' in fron of the InvoiceNo. Additionally, some others rows are documenting instances of damaged stock. Both the cancelled orders and damaged stock utilize negative quantity numbers. 
+One thing of note regarding how the transactions are documented, is that not all rows are completed transactions. Some rows are cancelled orders, represented by a 'C' in fron of the InvoiceNo. Additionally, some other rows document instances of damaged stock. Both cancelled orders and damaged stock utilize negative quantity numbers. 
 
 # Cleaning
 
 When starting the cleaning process of the data I had a few goals in mind:
 1. First, I wanted to remove all damage instances since there weren't enough to get meaningful analysis out of it. 
-2. Second, I wanted to change how the cancelled orders to documented since the 'C' in the InvoiceNo would mess up grouping analysis. 
+2. Second, I wanted to change how the cancelled orders were documented since the 'C' in the InvoiceNo would mess with analysis. 
 3. Third, I needed to ensure that the Date column was correctly recognized by Python as a date time datatype. 
 
 ```python
@@ -80,19 +80,20 @@ df['InvoiceNo'] = df['InvoiceNo'].mask(df['Cancelled'],df['InvoiceNo'].str[1:])
 df = df[(df.StockCode.str.len() <= 6) & (df.StockCode.str.isnumeric())]
 ```
 
-After importing the necessary libraries and functions, I started by reading in the dataset from the csv with `.read_csv()`. Once the dataframe is created I use `.to_datetime()` to ensure the InvoiceDate is recognized as a date. Next I add a new column called Cancelled which is a boolean column for whether the row was documneting a cancelled transaction. I then use that column with `.mask()` to remove the 'C' from the ID of cancelled transactions. Following that, I drop all the transactions for products not following the StockCode 6 number format since a small selection of products had longer stock codes from color variants or were not customer purchases.
+After importing the necessary libraries and functions, I started by reading in the dataset from the csv with `.read_csv()`. Once the dataframe is created I used `.to_datetime()` to ensure the InvoiceDate is recognized as datetime data. Next I added a new column called Cancelled which is a boolean column for whether the row was documneting a cancelled transaction. I then used that column with `.mask()` to remove the 'C' from the ID of cancelled transactions. Following that, I droped all the transactions for products not following the StockCode 6 number format since a small selection of products had longer stock codes from color variants or were not customer purchases.
 
 ```python
 df['TotalPrice'] = df['Quantity'] * df['UnitPrice']
 
 # Removed rows documenting product damage
 df = df.drop(index=df[(df.Quantity < 0) & (~df.Cancelled)].index)
+df['Quantity'] = abs(df['Quantity'])
 
 # Data separation by cancelled
 df_full = df.copy()
 df = df[~df.Cancelled].copy()
 ```
-Next, I created a new column TotalPrice for the total cost of a transaction, this will make later analysis easier by doing the calculation here. Lastly, I drop all transactions representing damage instances with `.drop()` and create a separate dataframe without any cancelled transactions since only one of my analysis questions involves cancelled products.
+Next, I created a new column TotalPrice for the total cost of a transaction, this will make later analysis easier by doing the calculation here. Lastly, I droped all transactions representing damage instances with `.drop()` and created a separate dataframe without any cancelled transactions since only one of my analysis questions involves cancelled products.
 
 Top 4 rows after cleaning:
 
@@ -107,7 +108,9 @@ Top 4 rows after cleaning:
 # Product Analysis Code
 
 Before starting analysis on the products, I needed to create a grouped dataset for the products sold. This grouped dataframe is used in most of the product analysis and has the following details:
-- The total number of a product sold
+
+- The product ID
+- The total quantity of a product sold
 - The total revenue generated by the product
 - The average unit price
 - The price band the product falls into
@@ -132,7 +135,7 @@ products_group['PriceBand'] = pd.cut(
     labels=bands
 )
 ```
-I start by using `.groupby()` to group by the StockCode and create the first 3 columns of Quantity, TotalRevenue, and UnitPrice. I then use `.cut()` to create a price band column which classifies the products based on what price range they fall into of (£0-1], (£1-3], (£3-5], (£5-10], and (£10+). I also create a color map for the color bands which will be used later to ensure consistent coloring for bands. In some places the color map isn't necessary because of the natural ordering of the bands.
+I started by using `.groupby()` to group by the StockCode and create the first 3 columns of Quantity, TotalRevenue, and UnitPrice. I then used `.cut()` to create a price band column which classifies the products based on what price range they fall into of (£0-1], (£1-3], (£3-5], (£5-10], and (£10+). I also created a color map for the color bands which will be used later to ensure consistent coloring for bands. The only place where the color map ended up being necessary was for the first chart, in the other charts the natural ordering of the bands allowed me to simplify the coloring by just using the COLORS list.
 
 
 ### Top Products
@@ -150,7 +153,7 @@ top_totalprice = products_group.nlargest(10, 'TotalRevenue')
 fig, ax = plt.subplots(1, 2, figsize=(14,6))
 
 ```
-For the first part of the product analysis I want to create bar charts to visualize the top 10 products by quantity sold and revenue generated. Since I have a grouped dataset, creating the bar plot is relatively simple. Using the `.nlargest()` function I can filter the dataset for the 10 top products by the passed column, in this case Quantity and TotalRevenue. After getting the top products I use `.subplots()` to allow me to put the 2 planned bar charts next to eachother in the same single image.
+For the first part of the product analysis I wanted to create bar charts to visualize the top 10 products by quantity sold and revenue generated. Since I have a grouped dataset, creating the bar plot is relatively simple. Using the `.nlargest()` function I can filter the dataset for the 10 top products by the passed column, in this case Quantity and TotalRevenue. After getting the top products I used `.subplots()` to allow me to put the 2 planned bar charts next to eachother in the same single image.
 
 ```python
 ## Quantity bar
@@ -168,20 +171,20 @@ ax[0].set_xlabel('Quantity')
 ax[0].set_ylabel('Product')
 ```
 
-Using the top products filtered dataset, I create a horizonal bar with `.barh()` using the color map to set the bar colors. Following the bar creation there are still many customizations needed to make the chart intuitive and insightful. I start by inverting the y axis with `.invert_yaxis()` to make the order of the bars more intuitive. Next, I turn on the grid lines with `.grid()`, but only for the axis that is needed and set them to be drawn below the bars with `.set_axisbelow()`. Then I use f string formatting with `.set_major_formatter()` and `.bar_label()` to add bar labels and customize the bar labels and axis ticks to use K to represent 1000, this makes understanding the numbers at a glance much easier. I then finish by adding titles and axis labels with `.set_title()`, `.set_xlabel()`, and `.set_ylabel()`. Since the process for creating the second bar plot is very similiar I won't showcase it here, the only notable differeneces are the labels.
+Using the top products filtered dataset, I created a horizonal bar with `.barh()` using the color map to set the bar colors. Following the bar creation there were still many customizations needed to do to make the chart more intuitive and insightful. I started by inverting the y axis with `.invert_yaxis()` to make the order of the bars more intuitive. Next, I turn on the grid lines with `.grid()`, but only for the axis that is needed (x) and set them to be drawn below the bars with `.set_axisbelow()`. Then I used f string formatting with `.set_major_formatter()` and `.bar_label()` to add bar labels and customize the bar labels and axis ticks to use K to represent 1000, this makes understanding the numbers at a glance much easier. I then finished by adding titles and axis labels with `.set_title()`, `.set_xlabel()`, and `.set_ylabel()`. Since the process for creating the second bar plot is very similiar I won't showcase it here, the only notable differeneces are the labels. In later parts of this project I will skip of explaining and showcasing code which is similar to already shown and explained code.
 
 ```python
 legend_handles = [Patch(facecolor=color, edgecolor='dimgrey', label=band) for band, color in color_map.items()]
 ax[1].legend(handles=legend_handles, title='Price Band', bbox_to_anchor=(1.02, 0.5), loc='center left')
 ```
-To create the legend I used `Patch()` with the color map to create the legend handles. This was necessary because neither of the bar plots have all the bands in their data.
+To create the legend I used `Patch()` with the color map to create the legend handles. Since neither of the bar plots had all the bands in their data, manually creating the legend like this was necessary.
 
 ```python
 ## Finish
 fig.tight_layout()
-plt.savefig('../assets/1_TopProducts.png', dpi=200)
+plt.savefig('../assets/1_TopProducts.png', dpi=200, bbox_inches='tight')
 ```
-Once I have both bar charts and the legend created I can finish by calling `.tight_layout()` to clean the visual placements and saving the figure with `.savefig()` to file so it can be displayed in the README.
+Once I had both bar charts and the legend created I finished by calling `.tight_layout()` to clean the visual placements and saving the figure with `.savefig()` to file so it can be displayed in the README.
 
 
 ### Product Price Band
@@ -202,7 +205,7 @@ fig, ax = plt.subplots(1, 2, figsize=(14,6))
 
 colors = ['salmon', 'skyblue', 'lightgreen', 'khaki', 'plum']
 ```
-For the second part of the price band analysis I want to create a pie chart and bar chart to visualize the breakdown of unique products and total revenue by the price bands. Utilizing price band column created earlier, I can group by the bands to get the total revenue of all products in the price bands in the count of how many unique products are in each of the bands.
+For the second part of the price band analysis I wanted to create a pie chart and bar chart to visualize the breakdown of unique products and total revenue by the price bands. Utilizing price band column created earlier, I could group by the bands to get the total revenue of all products in the price bands and the counts of how many unique products are in each of the bands.
 
 ```python
 ## Band distribution pie chart
@@ -220,31 +223,8 @@ ax[0].pie(
 ax[0].set_title('Distribution of Products Across Price Bands', weight='bold', fontsize=14,pad=10)
 
 ```
-With the new price band data I create a pie chart with `.pie()` to visualize the breakdown of how many products are in each price band. I make sure to add percent labels with `autopct=` so the viewer can more easily compare the band distribution with the next total revenue bar chart.
+With the new price band data I created a pie chart with `.pie()` to visualize the breakdown of how many products are in each price band. I made sure to add percent labels with `autopct=` so the viewer can more easily compare the band distribution with the next total revenue bar chart.
 
-```python
-## Revenue distribution bar chart
-bars1 = ax[1].bar(height=price_grouped['TotalRevenue'], x=price_grouped.index, color=COLORS, edgecolor=EDGECOLOR)
-
-ax[1].grid(axis='y', linestyle='--', alpha=0.4)
-ax[1].set_axisbelow(True)
-
-ax[1].yaxis.set_major_formatter(FuncFormatter(lambda y, _: f'£{y/1000000:.0f}M'))
-ax[1].bar_label(bars1, labels=[f'£{y/1000000:.2f}M' for y in price_grouped['TotalRevenue']], padding=-20, fontsize='12')
-ax[1].bar_label(bars1, labels=[f'{y*100:.1f}%' for y in price_grouped['TotalRevenue']/price_grouped['TotalRevenue'].sum()], padding=-35, fontsize='12')
-
-ax[1].set_ylabel('Total Revenue')
-ax[1].set_xlabel('Price Band')
-ax[1].set_title('Revenue Contribution by Price Band', weight='bold', fontsize=14,pad=10)
-
-ax[1].legend(bars1, bands, title='Price Band', bbox_to_anchor=(1.02, 0.5), loc='center left')
-
-
-
-## Finish
-fig.tight_layout()
-plt.savefig('../assets/2_PriceBandAnalysis.png', dpi=200)
-```
 The process for creating and finishing the second bar plot is similar to the already showcased bar plots. The most notable difference is the additonal bar label for the percentage breakdown of revenue to help the viewer make comparisons between the two plots. 
 
 
@@ -258,14 +238,14 @@ The process for creating and finishing the second bar plot is similar to the alr
 # Calculation
 cancelled_group = (df_full.groupby(['StockCode', 'Cancelled'], observed=True)['StockCode'].count().unstack(fill_value=0))
 cancelled_group = cancelled_group.rename(columns={False: 'NotCancelled', True: 'Cancelled'})
-cancelled_group = cancelled_group[(cancelled_group.Cancelled + cancelled_group.NotCancelled) > 20]
+cancelled_group = cancelled_group[(cancelled_group.Cancelled + cancelled_group.NotCancelled) >= 20]
 cancelled_group['PercentCancelled'] = (cancelled_group['Cancelled'] / (cancelled_group['NotCancelled'] + cancelled_group['Cancelled']))
 
 
 # Figure creation
 fig, ax = plt.subplots(figsize=(7,6))
 ```
-For the last part of the product analysis I want to chart the cancellation rate of a product versus the totals sales made to see if there is a correlation between the two values. To start I will need the cancellation rates. I calculate this by grouping the full dataframe (the one previously worked with had cancelled orders exlcuded) by StockCode and Cancelled, counting the number of orders cancelled and not cancelled. I then unstack it with `.unstack()` so now I have a dataframe with rows for each product and 2 columns for the cancelled counts and not cancelled counts. After some filtering to only get products with sufficient cancelled data I calculate the percent cancelled and save it to a new column.
+For the last part of the product analysis I wanted to plot the cancellation rate of a product versus the totals sales made to see if there is a correlation between the two values. To start I needed the cancellation rates. I calculated this by grouping the full dataframe (the one previously worked with had cancelled orders exlcuded) by StockCode and Cancelled, counting the number of orders cancelled and not cancelled. I then unstacked it with `.unstack()` so I had a dataframe with rows for each product and 2 columns for the cancelled counts and not cancelled counts. After filtering to only products with sufficient data (>= 20 orders), I calculated the percent cancelled and save it to a new column.
 
 ```python
 ## Cancellation percentage scatterplot
@@ -286,7 +266,7 @@ ax.set_title('Cancellation Rates of Products by Orders Made', fontsize=14, weigh
 ax.set_ylabel('Canellation Rate')
 ax.set_xlabel('Orders Made (Logarithmic)')
 ```
-Now that I have the two values needed of orders made and cancellation percentage, I can create the scatterplot with `.scatter()`. Since there is a large variety in the number of orders for each product I set the x scale to logarithmic with `.set_xscale()`.
+Now that I had the two values needed of orders made and cancellation percentage, I could create the scatterplot with `.scatter()`. Since there was a large variety in the number of orders for each product I set the x scale to logarithmic with `.set_xscale()`.
 
 ```python
 ## Line of best fit
@@ -298,7 +278,7 @@ y_line = m * x_line_log + b
 plt.plot(10**x_line_log,y_line, color='orangered', linewidth=2, label='Logarithmic fit')
 plt.legend()
 ```
-Using the log of the x values I create a line of best fit for the chart with `.polyfit()` and plot the line with `.plot()`.
+Using the log of the x values I created a line of best fit for the chart with `.polyfit()` and plotted the line with `.plot()`.
 
 ```python
 ## Finish
@@ -306,9 +286,10 @@ r, p = pearsonr(x_log, y)
 plt.text(0.02, 0.98, f"r = {r:.2f}\np = {p:.3g}", transform=plt.gca().transAxes, va='top', fontsize=12);
 
 plt.tight_layout()
-plt.savefig('../assets/3_CancellationRates.png', dpi=200)
+plt.savefig('../assets/3_CancellationRates.png', dpi=200, bbox_inches='tight')
 ```
-To finish the plot I wanted to some statistical analysis to see if there is a statistically significant relationship. I use `pearsonr()` to get the r and p values and put them onto the chart with `.text()`.
+To finish the plot I wanted to some statistical analysis to see if there is a statistically significant relationship. I used `pearsonr()` to get the r and p values and put them onto the chart with `.text()`.
+
 
 # Product Analysis Takeaways
 
@@ -340,22 +321,161 @@ To answer the questions posed at the start:
 
 # Customer Analysis Code
 
+Similar to the product analysis, I needed to create a grouped dataset to for the customers to the business. This grouped dataframe is used in most of the customer analysis and has the following details:
+ 
+- The customer ID
+- The Country the customer is based in
+- The total revenue generated by the customer
+- The revenue band that customer falls into
+
+```python
+## Dataset grouping
+df = df_full[~df_full.Cancelled].copy()
+customer_info = df.drop_duplicates('CustomerID')
+customers_group = df.groupby('CustomerID', observed=True)['TotalPrice'].agg(TotalRevenue='sum').sort_values(by='TotalRevenue', ascending=False)
+customers_group = customers_group.merge(customer_info[['CustomerID', 'Country']], on='CustomerID', how='left')
+
+## Customer revenue band creation
+bands = ['Low (£0–1,000)', 'Medium (£1,000–10,000)', 'High (£10,000+)']
+
+customers_group['RevenueBand'] = pd.cut(
+    customers_group['TotalRevenue'], 
+    bins=[0,1000,10000,float('inf')], 
+    labels=bands
+)
+df = df.merge(customers_group[['CustomerID', 'RevenueBand']], on='CustomerID', how='left')
+```
+The process for creating the grouped customer dataset is the same as for the products grouped dataset. I Utilized `.groupby()` to get the total revenue and `.cut()` to create the bands. Additionally, I used `.merge()` to add the revenue bands to the ungrouped dataset for the later monthly revenue analsysis.
+
 ### Customer Revenue Band
 <p align="center">
   <img src="assets/4_CustomerRevenueByBand.png" width="500">
 </p>
 
+```python
+### Customer Revenue Band Analysis
+
+## Setup
+# Calculation
+RevenueBand_counts = customers_group['RevenueBand'].value_counts()
+RevenueBand_sums = customers_group.groupby('RevenueBand', observed=True)['TotalRevenue'].sum()
+
+# Figure creation
+fig, ax1 = plt.subplots(figsize=(7,6))
+```
+For the first part of the customer analysis I wanted to compare the total revenue generated by customers of each band and how many customers fall into each band. To achieve this I created a graph with two vertical axes, one for the revenue (bars), and a second for the customer count (points). To get the customer counts I used `.value_counts()` to get how many customers are in each band, and used `.groupby()` to get the total revenue for each band.
+
+```python
+## Customer count point
+ax2 = ax1.twinx()
+
+ax2.plot(RevenueBand_counts, marker='_', color='orangered', linestyle='None', markeredgecolor='black', ms=20)
+ax2.plot(RevenueBand_counts, marker='D', color='orangered', linestyle='None', markeredgecolor='black', ms=8)
+
+labels1 =  [f'£{x/1000000:.2f}M' for x in RevenueBand_sums]
+ax2.set_ylabel('Customer Count in Band')
+```
+The revenue bars were created similarly to the previously shown bar charts. The customer counts were added using `twinx()` to create a secondary vertical axes on which I used `.plot()` to plot the customer counts. To remove the connect lines I set `linestyle=` to none and I plotted the same points twice to combine the diamond point shape with the straight line point shape.
+
+```python
+## Finish
+fig.legend(bars1, bands, title='Revenue Bands', bbox_to_anchor=(1, 0.5), loc='center left')
+
+fig.tight_layout()
+plt.savefig('../assets/4_CustomerRevenueByBand.png', dpi=200, bbox_inches='tight')
+```
+I finish by adding a legend outside of the chart and saving the figure.
 
 ### Monthly Revenue
 <p align="center">
   <img src="assets/5_MonthlyRevenue.png" width="800">
 </p>
 
+```python
+## Setup
+# Calculation
+month_revenue = df.groupby([df.InvoiceDate.dt.month,'RevenueBand'], observed=True)['TotalPrice'].sum().unstack(fill_value=0)
+month_revenue_percent = month_revenue.div(month_revenue.sum(axis=1), axis=0)
+
+# Figure Creation
+fig, ax = plt.subplots(1,2, figsize=(14,6))
+
+months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+```
+For the second part of the customer analysis I wanted to explore how revenue fluctuates throughout the year and whether those trends are the same for the different customer bands. To accomplish this I took the original dataframe which I had added the customer revenue bands to and grouped it by the month of the order, gotten with `dt.month` and the revenue band. Once unstacked I had a new dataframe with a row for each month and a column for the total revenue by each band in that month. I then calculated the percentages with `.div()` and created a list of month names to use a labels since `dt.month` uses numbers instead of names.
+
+```python
+## Monthly revenue bar
+month_revenue.plot(ax=ax[0], kind='bar', stacked=True, color=COLORS, edgecolor=EDGECOLOR, width=0.65)
+
+ax[0].grid(axis='y', linestyle='--', alpha=0.4)
+ax[0].set_axisbelow(True)
+
+ax[0].yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'£{x/1000000:.1f}M'))
+ax[0].set_xticklabels(months)
+ax[0].tick_params(rotation=0)
+
+for container in ax[0].containers:
+    ax[0].bar_label(container, fmt=lambda x: f'{x/1000:.0f}K', label_type='center', fontsize=8.5, color='black')
+
+fig.suptitle('Monthly Revenue by Customer Revenue Band', fontsize=14, fontweight='bold')
+fig.supxlabel('Month')
+ax[0].set_title('Monthly Revenue', fontsize=14)
+ax[0].set_xlabel('')
+ax[0].set_ylabel('Monthly Revenue')
+ax[0].legend(title='Revenue Bands') 
+```
+Inorder to create the stacked bar chart, I used `.plot()` with the `kind=` set to 'bar' and `stacked=` set to True. Now with the stacked barsI neededt o make some visual customizations. I changed the tick labels to use the month names instead of numbers with `.set_xticklabels()` and changed the rotation with `.tick_params()`. To add bar larbels to each individual bar I loop through the cotainers in the axis and  call `.bar_label()` with the container. I finish by adding a super title and super x-axis label with `.suptitle()` and `.supxlabel()`. The process for create the second stacked bar chart is very similar, instead using the percentage data.
 
 ### Country Revenue
 <p align="center">
   <img src="assets/6_UKvsOther.png" width="800">
 </p>
+
+```python
+## Setup
+# Calculations
+country_group = customers_group.groupby('Country', observed=True)['TotalRevenue'].agg(TotalRevenue='sum', CustomerCount='count')
+band_counts = customers_group.groupby(['Country', 'RevenueBand'], observed=True)['RevenueBand'].count().unstack(fill_value=0)
+country_group = country_group.reset_index().merge(band_counts.reset_index(), on='Country').set_index('Country')
+country_group['MedHighCount'] = country_group[bands[1]] + country_group[bands[2]]
+
+uk_group = country_group.groupby(country_group.index=='United Kingdom', observed=True)[['TotalRevenue', 'CustomerCount', 'MedHighCount']].agg(
+    TotalRevenue=('TotalRevenue','sum'),
+    CustomerCount=('CustomerCount','sum'),
+    MedHighCount=('MedHighCount','sum')
+)
+uk_group['MeanCustomerRevenue'] = uk_group['TotalRevenue'] / uk_group['CustomerCount']
+uk_group['MedHighPercent'] = uk_group['MedHighCount']/uk_group['CustomerCount']
+uk_group.index = ['Other', 'UK']
+
+# Figure Creation
+fig, ax = plt.subplots(1,4, figsize=(14,6))
+```
+For the last part of the customer analysis I wanted to compare the revenue between customer within the UK and those outside the UK. The dataset is from a UK based business so the vast majority of sales were to UK customers. To compare the two groups of customers I wanted to calculate a few datapoints:
+
+- The total revenue for each group
+- The total number of customers in each group
+- The percentage of Medium and High revenue band customers in each group
+- The average revenue per customer in each group
+
+```python
+## Revenue bar
+bar1 = ax[0].bar(height=uk_group['TotalRevenue'], x=uk_group.index, color=COLORS, edgecolor=EDGECOLOR)
+
+ax[0].grid(axis='y', linestyle='--', alpha=0.4)
+ax[0].set_axisbelow(True)
+
+ax[0].yaxis.set_major_formatter(FuncFormatter(lambda y, _: f'£{y/1000000:.0f}M'))
+ax[0].bar_label(bar1, labels=[f'£{y/1000000:.1f}M' for y in uk_group['TotalRevenue']], padding=-20, fontsize='12')
+
+fig.suptitle('Comparison of UK vs. All Other Countries', weight='bold', fontsize=20)
+fig.supxlabel('Country')
+ax[0].set_title('Total Revenue', fontsize=14)
+ax[0].set_ylabel('Revenue')
+```
+
+
 ## Customer Analysis Takeaways
 
 # Conclusion
