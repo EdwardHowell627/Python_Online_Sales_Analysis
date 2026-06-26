@@ -7,7 +7,7 @@ From this dataset, I wanted to know a few things:
 - How do prices impact the success of a product?
 - Does the success of a product correlate with how often orders are cancelled?
 - How much of overall revenue is contributed by low spending and high spending customers?
-- What months of the year have the most revenue?
+- How does revenue fluctuate throughout the year? Does it differ between low and high spending customers?
 - How important is the customer base outside of the UK to revenue?
 
 
@@ -27,7 +27,7 @@ From this dataset, I wanted to know a few things:
   <img src="assets/Dataset.png" width="800">
 </p>
 
-*Dataset sourced from the [UC Irvine Machine Learning Repository](https://archive.ics.uci.edu/dataset/352/online+retail)
+The dataset sourced from the [UC Irvine Machine Learning Repository](https://archive.ics.uci.edu/dataset/352/online+retail)
 
 Top 4 rows before cleaning:
 
@@ -43,6 +43,8 @@ The dataset, as shown above is a single table with 8 columns. Each row documents
 One thing of note regarding how the transactions are documented, is that not all rows are completed transactions. Some rows are cancelled orders, represented by a 'C' in fron of the InvoiceNo. Additionally, some other rows document instances of damaged stock. Both cancelled orders and damaged stock utilize negative quantity numbers. 
 
 # Cleaning
+
+All code can be located in the [analysis](analysis) folder.
 
 When starting the cleaning process of the data I had a few goals in mind:
 1. First, I wanted to remove all damage instances since there weren't enough to get meaningful analysis out of it. 
@@ -452,12 +454,14 @@ uk_group.index = ['Other', 'UK']
 # Figure Creation
 fig, ax = plt.subplots(1,4, figsize=(14,6))
 ```
-For the last part of the customer analysis I wanted to compare the revenue between customer within the UK and those outside the UK. The dataset is from a UK based business so the vast majority of sales were to UK customers. To compare the two groups of customers I wanted to calculate a few datapoints:
+For the last part of the customer analysis I wanted to compare customers within the UK and those outside the UK. The dataset is from a UK based business so the vast majority of sales were to UK customers. To compare the two groups of customers I wanted to calculate a few datapoints:
 
 - The total revenue for each group
 - The total number of customers in each group
 - The percentage of Medium and High revenue band customers in each group
 - The average revenue per customer in each group
+
+To calculate these values I did three `.groupby()` statements. In the first, I grouped by only the country to get the total revenue of each country and the total customers. In the second, I grouped by the country and the revenue band, unstacking afterwards to get the count of each revenue band per country. After that I merged the two dataframes and added a new column for the total combined customers in the medium or high revenue band. With that data I then did a final group by on whether the country was the UK or not and then calculated the mean customer revenue and converted the medium or high customer count to a percentage. 
 
 ```python
 ## Revenue bar
@@ -474,8 +478,31 @@ fig.supxlabel('Country')
 ax[0].set_title('Total Revenue', fontsize=14)
 ax[0].set_ylabel('Revenue')
 ```
+Now that I had the values, all I needed to do was visualize them. I decided to use multiple bar charts instead of pie charts because bar charts more easily let you visually compare accross the four charts. I also tried instead using box plots but the large differnce in revenue scale between the high and low end of customers made the boxplots have a significant number of outliers and were not very useful for comparing the two groups. The process for creating the bar charts is similar to what has already been showcased, making use of `.bar()` and a variety of other functions to make the graph more visually intuitive.
 
+# Customer Analysis Takeaways
 
-## Customer Analysis Takeaways
+### Customer Revenue Band & Monthly Revenue
+Based on the first chart showcasing the total revenue and customer count of each band, although there are many times less customers in the high revenue customer band, they still make up a significnat proportion of the generated revenue. There are exactly 100 customers within the high revenue band yet they generate 80% as much revenue as the about 1500 medium revenue customers. Addionally, those medium revenue cusotmers contribute over 3 times the revenue of the twice as many low revenue customers. From these relations between bands it is clear that the business cannot survive on low revenue customers since they make up about only 16% of the total revenue. 
+
+Looking at the monthly revenue we can notice a few notable patterns. The most obvious being the increased demand from September to December and decreased demand early in the year. While it is impossible to know for sure the cause, it is likely because of the many revenue-driving holdays around that time of year such as Christmas, black friday, halloween and more. Looking instead at the specific revenue bands we can notice some more patterns. Not all of the bands are effected the same by the swings in monthly demand. The low revenue band is relatively consistent throughout the year and over doubles around the end of the year. Doing a quick calculationg, the low revenue customers spend on average 2.22 times as much per month for the last 4 months than the average of the first 8. For medium revenue customers it is 1.77 and for high revenue customers it is 1.87. The high and medium revenue customers are more consistent spenders throuout the year when compared to the low revenue customers.  
+
+### UK vs. Other
+When comparing the two groups of UK and all other countries, while the UK has a large advantage in terms of overall revenue and customer count there is a surprisng differnce on a customer to cusotmer basis. A larger percentage of the non-UK customer base are within the medium and high revenue customer bands. The average revenue per customer outside the UK is nearly doubl that of those in the UK. 
+
+### Questions and Answers
+
+To answer the question from the start:
+
+- How much of overall revenue is contributed by low spending and high spending customers?
+    - The majority of overal revenue is from customers who spent over £1000 throughout the dataset. Although there are about half as many medium and high spending customers as low spending customers, they make up 84% of the revenue.
+- How does revenue fluctuate throughout the year? Does it differ between low and high spending customers?
+    - Revenue peaks around the end of the year and dips around the start of the year likely due to holidays like Christmas. The peak is more extreme is low spending customers and less extreme in medium and high spending customers.   
+- How important is the customer base outside of the UK to revenue?
+    - Although customers outside the UK make up a small portion of the overall customer base and revenue, they are on average as valuable to revenue as 2 customers in the UK, making them an important customer base to maintain. 
+
 
 # Conclusion
+
+Thank you for taking the time to explore by Python project. Creating this project was a very useful experience in practicing both my data analysis skills with Python and my communication skills. Although this data is not nearly as relevant to my career as the data jobs analysis in SQL, I hope I was able to explain the topic well enough that you walk away from this understanding the nuances of this dataset. 
+
