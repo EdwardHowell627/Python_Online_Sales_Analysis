@@ -24,7 +24,7 @@ From this dataset, I wanted to know a few things:
 
 # Dataset
 <p align="center">
-  <img src="assets/Dataset.png" width="800">
+  <img src="assets/dataset.png" width="800">
 </p>
 
 The dataset sourced from the [UC Irvine Machine Learning Repository](https://archive.ics.uci.edu/dataset/352/online+retail)
@@ -143,7 +143,7 @@ I started by using `.groupby()` to group by the StockCode and create the first 3
 
 ### Top Products
 <p align="center">
-  <img src="assets/1_TopProducts.png" width="800">
+  <img src="assets/1_top_products.png" width="800">
 </p>
 
 ```python
@@ -192,7 +192,7 @@ Once I had both bar charts and the legend created, I finished by calling `.tight
 
 ### Product Price Band
 <p align="center">
-  <img src="assets/2_PriceBandAnalysis.png" width="800">
+  <img src="assets/2_price_band_analysis.png" width="800">
 </p>
 
 ```python
@@ -233,7 +233,7 @@ The process for creating and finishing the second bar plot is similar to the alr
 
 ### Cancellation Rate
 <p align="center">
-  <img src="assets/3_CancellationRates.png" width="500">
+  <img src="assets/3_cancellation_rates.png" width="500">
 </p>
 
 ```python
@@ -352,7 +352,7 @@ The process for creating the grouped customer dataset is the same as for the pro
 
 ### Customer Revenue Band
 <p align="center">
-  <img src="assets/4_CustomerRevenueByBand.png" width="500">
+  <img src="assets/4_customer_revenue_by_band.png" width="500">
 </p>
 
 ```python
@@ -391,7 +391,7 @@ I finish by adding a legend outside of the chart and saving the figure.
 
 ### Monthly Revenue
 <p align="center">
-  <img src="assets/5_MonthlyRevenue.png" width="800">
+  <img src="assets/5_monthly_revenue.png" width="800">
 </p>
 
 ```python
@@ -432,7 +432,7 @@ In order to create the stacked bar chart, I used `.plot()` with the `kind=` set 
 
 ### Country Revenue
 <p align="center">
-  <img src="assets/6_UKvsOther.png" width="800">
+  <img src="assets/6_UK_vs_other.png" width="800">
 </p>
 
 ```python
