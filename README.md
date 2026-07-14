@@ -27,7 +27,7 @@ From this dataset, I wanted to know a few things:
   <img src="assets/dataset.png" width="800">
 </p>
 
-The dataset sourced from the [UC Irvine Machine Learning Repository](https://archive.ics.uci.edu/dataset/352/online+retail)
+*The dataset sourced from the [UC Irvine Machine Learning Repository](https://archive.ics.uci.edu/dataset/352/online+retail).*
 
 Top 4 rows before cleaning:
 
