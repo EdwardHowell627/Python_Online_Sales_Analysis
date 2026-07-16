@@ -1,6 +1,6 @@
 # Introduction
 
-This is the third of four projects meant to showcase my knowledge of GitHub and various data science tools, such as Python. For this project, I worked with a dataset documenting over 500,000 transactions over the course of 1 year for an online retail store based in the United Kingdom. This project will focus on cleaning, analyzing, and visualizing the dataset using Python.
+Welcome to my portfolio project on Python (Pandas & Matplotlib), this project is the third of four projects meant to showcase my knowledge of the most common and important tools in data sciecne. For this project, I worked with a dataset documenting over 500,000 transactions over the course of 1 year for an online retail store based in the United Kingdom. This project focused on cleaning, analyzing, and visualizing the dataset using Python and the most common data science libraries of Pandas and Matplotlib.
 
 From this dataset, I wanted to know a few things:
 - Which products are most successful?
