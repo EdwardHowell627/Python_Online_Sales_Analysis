@@ -1,6 +1,6 @@
 # Introduction
 
-Welcome to my portfolio project on Python (Pandas & Matplotlib), this project is the third of four projects meant to showcase my knowledge of the most common and important tools in data sciecne. For this project, I worked with a dataset documenting over 500,000 transactions over the course of 1 year for an online retail store based in the United Kingdom. This project focused on cleaning, analyzing, and visualizing the dataset using Python and the most common data science libraries of Pandas and Matplotlib.
+Welcome to my portfolio project on Python (Pandas & Matplotlib), this project is the third of four projects meant to showcase my knowledge of the most common and important tools in data science. For this project, I worked with a dataset documenting over 500,000 transactions over the course of 1 year for an online retail store based in the United Kingdom. This project focused on cleaning, analyzing, and visualizing the dataset using Python and the most common data science libraries of Pandas and Matplotlib.
 
 From this dataset, I wanted to know a few things:
 - Which products are most successful?
@@ -48,7 +48,7 @@ All code can be located in the [analysis](analysis) folder.
 
 When starting the cleaning process of the data, I had a few goals in mind:
 1. First, I wanted to remove all damage instances since there weren't enough to get meaningful analysis out of it. 
-2. Second, I wanted to change how the cancelled orders were documented since the 'C' in the InvoiceNo would mess with analysis. 
+2. Second, I wanted to change how the cancelled orders were documented since the 'C' in the InvoiceNo would mess with other analysis. 
 3. Third, I needed to ensure that the Date column was correctly recognized by Python as a datetime datatype. 
 
 ```python
@@ -110,7 +110,7 @@ Top 4 rows after cleaning:
 
 # Product Analysis Code
 
-Before starting analysis on the products, I needed to create a grouped dataset for the products sold. This grouped dataframe is used in most of the product analysis and has the following details:
+Before starting analysis on the products, I needed to create a grouped dataframe for the products sold. This dataframe is used in most of the product analysis and has the following columns:
 
 - The product ID
 - The total quantity of a product sold
@@ -138,7 +138,7 @@ products_group['PriceBand'] = pd.cut(
     labels=bands
 )
 ```
-I started by using `.groupby()` to group by the StockCode and create the first 3 columns of Quantity, TotalRevenue, and UnitPrice. I then used `.cut()` to create a price band column, which classifies the products based on what price range they fall into: (£0-1], (£1-3], (£3-5], (£5-10], and (£10+). I also created a color map for the color bands, which will be used later to ensure consistent coloring for bands. The only place where the color map ended up being necessary was for the first chart. In the other charts, the natural ordering of the bands allowed me to simplify the coloring by just using the COLORS list.
+I started by using `.groupby()` to group by the StockCode and create the first 3 columns of Quantity, TotalRevenue, and UnitPrice. I then used `.cut()` to create a price band column, which classifies the products based on what price range they fall into: (£0-1], (£1-3], (£3-5], (£5-10], and (£10+). I also created a color map for the color bands, which will be used later to ensure consistent coloring for the bands in charts. The only place where the color map was necessary was for the first chart. In the other charts, the natural ordering of the bands allowed me to simplify the coloring by just using the constant COLORS list I created at the start.
 
 
 ### Top Products
@@ -156,7 +156,7 @@ top_totalprice = products_group.nlargest(10, 'TotalRevenue')
 fig, ax = plt.subplots(1, 2, figsize=(14,6))
 
 ```
-For the first part of the product analysis I wanted to create bar charts to visualize the top 10 products by quantity sold and revenue generated. Since I have a grouped dataset, creating the bar plot is relatively simple. Using the `.nlargest()` function, I can filter the dataset for the 10 top products by the passed column, in this case Quantity and TotalRevenue. After getting the top products, I used `.subplots()` to allow me to put the 2 planned bar charts next to each other in the same single image.
+For the first part of the product analysis I wanted to create bar charts to visualize the top 10 products by quantity sold and revenue generated. Since I have a grouped dataframe, creating the bar plot is relatively simple. Using the `.nlargest()` function, I can filter the dataframe for the 10 top products by the passed column, in this case Quantity and TotalRevenue. After getting the top products, I used `.subplots()` to allow me to put the 2 bar charts next to each other in the same single image.
 
 ```python
 ## Quantity bar
@@ -174,7 +174,7 @@ ax[0].set_xlabel('Quantity')
 ax[0].set_ylabel('Product')
 ```
 
-Using the top products filtered dataset, I created a horizontal bar with `.barh()` using the color map to set the bar colors. Following the bar creation, there were still many customizations needed to be done to make the chart more intuitive and insightful. I started by inverting the y-axis with `.invert_yaxis()` to make the order of the bars more intuitive. Next, I turn on the grid lines with `.grid()`, but only for the axis that is needed, (x) and set them to be drawn below the bars with `.set_axisbelow()`. Then I used f-string formatting with `.set_major_formatter()` and `.bar_label()` to add bar labels and customize the bar labels and axis ticks to use K to represent 1000. This makes understanding the numbers at a glance much easier. I then finished by adding titles and axis labels with `.set_title()`, `.set_xlabel()`, and `.set_ylabel()`. Since the process for creating the second bar plot is very similar, I won't showcase it here. The only notable differences are the labels. In later parts of this project, I will skip explaining and showcasing code that is similar to already shown and explained code.
+Using the top products filtered datframe, I created a horizontal bar with `.barh()` using the color map to set the bar colors. Following the bar creation, there were still many customizations needed to be done to make the chart more intuitive and insightful. I started by inverting the y-axis with `.invert_yaxis()` to make the order of the bars more intuitive. Next, I turned on the grid lines with `.grid()`, but only for the x-axis, and set the grid lines to be drawn below the bars with `.set_axisbelow()`. Then, I used f-string formatting with `.set_major_formatter()` and `.bar_label()` to add bar labels and customize those labels along with the axis ticks to use K to represent 1000. This makes understanding the numbers at a glance much easier. I then finished by adding titles and axis labels with `.set_title()`, `.set_xlabel()`, and `.set_ylabel()`. Since the process for creating the second bar plot is very similar, I won't showcase it here. The only notable differences are the labels. In later parts of this project, I will skip explaining and showcasing code that is similar to already shown and explained code.
 
 ```python
 legend_handles = [Patch(facecolor=color, edgecolor='dimgrey', label=band) for band, color in color_map.items()]
@@ -187,7 +187,7 @@ To create the legend I used `Patch()` with the color map to create the legend ha
 fig.tight_layout()
 plt.savefig('../assets/1_TopProducts.png', dpi=200, bbox_inches='tight')
 ```
-Once I had both bar charts and the legend created, I finished by calling `.tight_layout()` to clean the visual placements and saving the figure with `.savefig()` to file so it can be displayed in the README.
+Once I had both bar charts and the legend created, I finished by calling `.tight_layout()` to clean the visual placements and saved the figure to a file with with `.savefig()` so it can be displayed in the README.
 
 
 ### Product Price Band
@@ -208,7 +208,7 @@ fig, ax = plt.subplots(1, 2, figsize=(14,6))
 
 colors = ['salmon', 'skyblue', 'lightgreen', 'khaki', 'plum']
 ```
-For the second part of the price band analysis, I wanted to create a pie chart and bar chart to visualize the breakdown of unique products and total revenue by the price bands. Utilizing the price band column created earlier, I could group by the bands to get the total revenue of all products in the price bands and the counts of how many unique products are in each of the bands.
+For the second part of the analysis, I wanted to create a pie chart and bar chart to visualize the breakdown of unique products and total revenue by the price bands. Utilizing the price band column created earlier, I could group by the bands to get the total revenue of all products in the price bands and the counts of how many unique products are in each of the bands.
 
 ```python
 ## Band distribution pie chart
@@ -228,7 +228,7 @@ ax[0].set_title('Distribution of Products Across Price Bands', weight='bold', fo
 ```
 With the new price band data, I created a pie chart with `.pie()` to visualize the breakdown of how many products are in each price band. I made sure to add percent labels with `autopct=` so the viewer can more easily compare the band distribution with the next total revenue bar chart.
 
-The process for creating and finishing the second bar plot is similar to the already showcased bar plots. The most notable difference is the additional bar label for the percentage breakdown of revenue to help the viewer make comparisons between the two plots. 
+The process for creating and finishing the second bar plot is similar to the already showcased bar plots.
 
 
 ### Cancellation Rate
@@ -269,7 +269,7 @@ ax.set_title('Cancellation Rates of Products by Orders Made', fontsize=14, weigh
 ax.set_ylabel('Canellation Rate')
 ax.set_xlabel('Orders Made (Logarithmic)')
 ```
-Now that I had the two values needed of orders made and cancellation percentage, I could create the scatterplot with `.scatter()`. Since there was a large variety in the number of orders for each product I set the x scale to logarithmic with `.set_xscale()`.
+Now that I had the two values needed of orders made and cancellation percentage, I could create the scatterplot with `.scatter()`. Additionally, since there was a large variety in the number of orders for each product I set the x scale to logarithmic with `.set_xscale()`.
 
 ```python
 ## Line of best fit
@@ -297,15 +297,15 @@ To finish the plot I wanted to some statistical analysis to see if there is a st
 # Product Analysis Takeaways
 
 ### Top Products & Price Band
-From the two bar charts of the top 10 products by quantity sold and total revenue, we can notice a couple patterns. One pattern is that the top products by quantity sold are all from the two lowest price bands, clearly showing that lower-priced products sell better. Another pattern is that across the two charts, the £1-3 band is the top performer, with it having both the top 3 products by quantity sold and half of both the top 10 by quantity and revenue. Interestingly, there isn't a single product from the lowest price band in the top 10 by revenue, showing that although they sell well, that doesn't make up for low revenue generated per sale.
+From the two bar charts of the top 10 products by quantity sold and total revenue, we can notice a couple patterns. One pattern is that the top products by quantity sold are all from the two lowest price bands, showing that lower-priced products sell better. Another pattern is that across the two charts, the £1-3 band is the top performer, with it having both the top 3 products by quantity sold and half of both the top 10 by quantity and revenue. Interestingly, there isn't a single product from the lowest price band in the top 10 by revenue, showing that although they sell well, that doesn't make up for low revenue generated per sale.
 
-Looking at the second chart, we can get some more insights regarding the overall performances of the different price bands. Products in the £1-3 band by far are the most popular, with 44.5% of all unique products offered having a price in that band. The most interesting insights, however, come from comparing the distribution of products by band to the distribution of revenue by band. Products in the £1-3 and £3-5 price bands have a roughly equal representation in the product distribution and revenue distribution. Products in the £0-1 price band make up 17.7% of unique products falling into that band but with those products, up less than half of that percentage of overall revenue. Conversely, the revenue of products in the £5-10 and £10+ bands outperforms their percentage of the unique products within their band. 
+Looking at the second chart, we can get some more insights regarding the overall performances of the different price bands. Products in the £1-3 band by far are the most popular, with 44.5% of all unique products offered having a price in that band. The most interesting insights, however, come from comparing the distribution of products by band to the distribution of revenue by band. Products in the £1-3 and £3-5 price bands have a roughly equal representation in the product distribution and revenue distribution. Products in the £0-1 price band make up 17.7% of unique products falling into that band make up less than half of that percentage of overall revenue. Conversely, the revenue of products in the £5-10 and £10+ bands outperforms their percentage of the unique products within their band. 
 
 From these two charts, it is clear that low-price products within the £0-1 band are much less profitable compared to products of higher prices. Products within that band make many sales but bring in very little revenue compared to the percentage of unique products within the band. Conversely, products in the £1-3 band make up the core of the business with the majority of revenue and unique products within the band. Lastly, products of the higher price bands outperform the lower bands with regard to revenue generated per unique product listed. I would recommend a shift in focus away from lower-priced products under £1 and toward the more revenue-generating higher-priced products.
 
 ### Cancellation Rates
 
-Based on the graph of cancellation rates and the p-value being greater than 0.05, there is no statistically significant relationship between cancellation rates and the total number of orders made for a product. This tells us that products that have been ordered more do not have statistically different cancellation rates. 
+Based on the graph of cancellation rates and the p-value being greater than 0.05, there is no statistically significant relationship between cancellation rates and the total number of orders made for a product. This tells us that products that have been ordered more do not have statistically different cancellation rates. I wanted to test this to see if more successfull items were possibly more trusted, resulting in less cancellations but that has been proven false.
 
 ### Questions and Answers
 To answer the questions posed at the start:
@@ -316,7 +316,7 @@ To answer the questions posed at the start:
 
 - How do prices impact the success of a product?
 
-    - The products in the lowest price band  of £0-1 make up a small portion of the overall revenue. On the other hand, products in the highest price bands of £5-10 and £10+ make more revenue relative to the unique number of products in the price bands. 
+    - The products in the lowest price band of £0-1 sell well but make up a small portion of the overall revenue. On the other hand, products in the highest price bands of £5-10 and £10+ sell less but make more revenue relative to the unique number of products in the price bands. 
 
 - Does the success of a product correlate with how often orders are cancelled?
 
@@ -324,7 +324,7 @@ To answer the questions posed at the start:
 
 # Customer Analysis Code
 
-Similar to the product analysis, I needed to create a grouped dataset for the customers to the business. This grouped dataframe is used in most of the customer analysis and has the following details:
+Similar to the product analysis, I needed to create a grouped dataframe for the customers to the business. This grouped dataframe is used in most of the customer analysis and has the following details:
  
 - The customer ID
 - The Country the customer is based in
@@ -348,7 +348,7 @@ customers_group['RevenueBand'] = pd.cut(
 )
 df = df.merge(customers_group[['CustomerID', 'RevenueBand']], on='CustomerID', how='left')
 ```
-The process for creating the grouped customer dataset is the same as for the product grouped dataset. I Utilized `.groupby()` to get the total revenue and `.cut()` to create the bands. Additionally, I used `.merge()` to add the revenue bands to the ungrouped dataset for the later monthly revenue analysis.
+The process for creating the grouped customer dataframe is the same as for the product grouped dataframe. I Utilized `.groupby()` to get the total revenue and `.cut()` to create the bands. Additionally, I used `.merge()` to add the revenue bands to the ungrouped dataframe for the later monthly revenue analysis.
 
 ### Customer Revenue Band
 <p align="center">
@@ -378,7 +378,7 @@ ax2.plot(RevenueBand_counts, marker='D', color='orangered', linestyle='None', ma
 labels1 =  [f'£{x/1000000:.2f}M' for x in RevenueBand_sums]
 ax2.set_ylabel('Customer Count in Band')
 ```
-The revenue bars were created similarly to the previously shown bar charts. The customer counts were added using `twinx()` to create a secondary vertical axis on which I used `.plot()` to plot the customer counts. To remove the connect lines, I set `linestyle=` to none and I plotted the same points twice to combine the diamond point shape with the straight line point shape.
+The revenue bars were created similarly to the previously shown bar charts. The customer counts were added using `twinx()` to create a secondary vertical axis on which I used `.plot()` to plot the customer counts. To remove the connecting lines between points, I set `linestyle=` to none and I plotted the same points twice to combine the diamond point shape with the straight line point shape to make it more visible.
 
 ```python
 ## Finish
@@ -405,7 +405,7 @@ fig, ax = plt.subplots(1,2, figsize=(14,6))
 
 months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 ```
-For the second part of the customer analysis I wanted to explore how revenue fluctuates throughout the year and whether those trends are the same for the different customer bands. To accomplish this, I took the original dataframe, which I had added the customer revenue bands to, and grouped it by the month of the order, gotten with `dt.month` and the revenue band. Once unstacked, I had a new dataframe with a row for each month and a column for the total revenue by each band in that month. I then calculated the percentages with `.div()` and created a list of month names to use as labels since `dt.month` uses numbers instead of names.
+For the second part of the customer analysis I wanted to explore how revenue fluctuates throughout the year and whether those trends are the same for the different customer bands. To accomplish this, I took the original dataframe, which I had added the customer revenue bands to, and grouped it by the month of the order, gotten with `dt.month` and the revenue band. Once unstacked, I had a new dataframe with a row for each month and a column for the total revenue by each band in that month. I then calculated the percentages with `.div()` and created a list of month names to use as labels since `dt.month` uses numbers instead of names. The alternative was using `dt.month` first and manually ordering it later since it would naturally order the months alphabetically.
 
 ```python
 ## Monthly revenue bar
@@ -484,9 +484,9 @@ Now that I had the values, all I needed to do was visualize them. I decided to u
 # Customer Analysis Takeaways
 
 ### Customer Revenue Band & Monthly Revenue
-Based on the first chart showcasing the total revenue and customer count of each band, although there are many times fewer customers in the high-revenue customer band, they still make up a significant proportion of the generated revenue. There are exactly 100 customers within the high-revenue band, yet they generate 80% as much revenue as the approximately 1500 medium-revenue customers. Additionally, those medium-revenue customers contribute over 3 times the revenue of the twice as many low-revenue customers. From these relations between bands, it is clear that the business cannot survive on low-revenue customers since they make up about only 16% of the total revenue. 
+Based on the first chart showcasing the total revenue and the customer count of each band, although there are many times fewer customers in the high-revenue customer band, they still make up a significant proportion of the generated revenue. There are exactly 100 customers within the high-revenue band, yet they generate 80% as much revenue as the approximately 1500 medium-revenue customers. Additionally, those medium-revenue customers contribute over 3 times the revenue of the twice as many low-revenue customers. From these relations between bands, it is clear that the business cannot survive on low-revenue customers alone since they make up about only 16% of the total revenue. 
 
-Looking at the monthly revenue, we can notice a few notable patterns. The most obvious being the increased demand from September to December and decreased demand early in the year. While it is impossible to know for sure the cause, it is likely because of the many revenue-driving holidays around that time of year, such as Christmas, Black Friday, Halloween, and more. Looking instead at the specific revenue bands, we can notice some more patterns. Not all of the bands are affected the same by the swings in monthly demand. The low revenue band is relatively consistent throughout the year and more than doubles around the end of the year. Doing a quick calculation, the low-revenue customers spend on average 2.22 times as much per month for the last 4 months as the average of the first 8. For medium-revenue customers it is 1.77, and for high-revenue customers it is 1.87. The high- and medium-revenue customers are more consistent spenders throughout the year when compared to the low-revenue customers.  
+Looking at the monthly revenue, we can notice a few notable patterns. The most obvious being the increased demand from September to December and decreased demand early in the year. While it is impossible to know for sure the cause, it is likely because of the many revenue-driving holidays around that time of year, such as Christmas, Black Friday, Halloween, and more. Looking instead at the specific revenue bands, we can notice some more patterns. Not all of the bands are affected the same by the swings in monthly demand. The low revenue band is relatively consistent throughout the year and more than doubles around the end of the year. Doing a quick calculation, the low-revenue customers spend on average 2.22 times as much per month for the last 4 months as the average of the first 8. For medium-revenue customers it is 1.77, and for high-revenue customers it is 1.87. The high- and medium-revenue customers are more consistent spenders throughout the year when compared to the low-revenue customers. This is likely because these low-revenue customers are people who have bought from the company a handfull of times, with many customers likely only ever because of the holidays.
 
 ### UK vs. Others
 When comparing the two groups of the UK and all other countries, while the UK has a large advantage in terms of overall revenue and customer count, there is a surprising difference on a customer-to-customer basis. A larger percentage of the non-UK customer base is within the medium and high-revenue customer bands. The average revenue per customer outside the UK is nearly double that of those in the UK. 
@@ -498,12 +498,12 @@ To answer the question from the start:
 - How much of overall revenue is contributed by low-spending and high-spending customers?
     - The majority of overall revenue is from customers who spent over £1000 throughout the dataset. Although there are about half as many medium and high spending customers as low-spending customers, they make up 84% of the revenue.
 - How does revenue fluctuate throughout the year? Does it differ between low and high spending customers?
-    - Revenue peaks around the end of the year and dips around the start of the year likely due to holidays like Christmas. The peak is more extreme in low-spending customers and less extreme in medium and high-spending customers.   
+    - Revenue peaks around the end of the year and dips around the start of the year likely due to sales-driving holidays like Christmas. The peak is more extreme in low-spending customers and less extreme in medium and high-spending customers.   
 - How important is the customer base outside of the UK to revenue?
     - Although customers outside the UK make up a small portion of the overall customer base and revenue, they are on average as valuable to revenue as 2 customers in the UK, making them an important customer base to maintain. 
 
 
 # Conclusion
 
-Thank you for taking the time to explore my Python project. Creating this project was a very useful experience in practicing both my data analysis skills with Python and my communication skills. Although this data is not nearly as relevant to my career as the data jobs analysis in SQL, I hope I was able to explain the topic well enough that you walk away from this understanding the nuances of this dataset. 
+Thank you for taking the time to explore my Python project. Creating this project was a very useful experience in practicing both my data analysis skills with Python and my communication skills. Although this data is not as relevant to my career as the data jobs analysis in SQL, I hope I was able to explain the topic well enough that you walk away from this understanding the nuances of this dataset. 
 
